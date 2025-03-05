@@ -9,7 +9,7 @@ const val NOT_LEARNED_WORDS_COUNT = 4
 data class Word(
     val original: String,
     val translation: String,
-    val correctAnswersCount: Int = 0,
+    var correctAnswersCount: Int = 0,
 )
 
 fun loadDictionary(): MutableList<Word> {
@@ -35,6 +35,16 @@ fun loadDictionary(): MutableList<Word> {
 
 fun List<Word>.filterLearnedWords(): Int {
     return this.filter { it.correctAnswersCount >= MAX_COUNT_RIGHT_ANSWERS }.size
+}
+
+fun saveDictionary(dictionary: MutableList<Word>) {
+    val wordsFile: File = File("words.txt")
+    wordsFile.printWriter().use { out ->
+        dictionary.forEach { word ->
+            out.println("${word.original}|${word.translation}|${word.correctAnswersCount}")
+        }
+    }
+
 }
 
 fun main() {
@@ -65,8 +75,26 @@ fun main() {
                     println("\t${index + 1} - ${word.translation}")
                 }
 
+                val splitter = "-".repeat(10)
+                println("\t" + splitter)
+                println("\t0 - Меню")
+
                 println("Введите номер правильного ответа:")
-                val userAnswer = readln().toInt()
+                val userAnswerInput = readln().toInt()
+
+                if (userAnswerInput == 0) {
+                    continue
+                }
+
+                val correctAnswerId = answerChoices.indexOf(correctAnswer) + 1
+
+                if (userAnswerInput == correctAnswerId) {
+                    correctAnswer.correctAnswersCount++
+                    println("Правильно!")
+                    saveDictionary(dictionary)
+                } else {
+                    println("Неправильно! ${correctAnswer.original} - это ${correctAnswer.translation}")
+                }
 
             }
             "2" -> {
