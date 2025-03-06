@@ -1,110 +1,62 @@
 package ru.fedorova.spring
 
-import java.io.File
-
-const val MAXIMUM_PERCENT = 100
-const val MAX_COUNT_RIGHT_ANSWERS = 3
-const val NOT_LEARNED_WORDS_COUNT = 4
-
 data class Word(
     val original: String,
     val translation: String,
     var correctAnswersCount: Int = 0,
 )
 
-fun loadDictionary(): MutableList<Word> {
-
-    val wordsFile: File = File("words.txt")
-
-    val dictionary: MutableList<Word> = mutableListOf()
-
-    wordsFile.forEachLine { line ->
-        val part = line.split("|")
-        val correctAnswersCount = part[2].toIntOrNull() ?: 0
-        val word = Word(
-            original = part[0],
-            translation = part[1],
-            correctAnswersCount = correctAnswersCount
-        )
-        dictionary.add(word)
-    }
-
-    return dictionary
-
+fun Question.asConsoleString(): String {
+    val variants = this.variants
+        .mapIndexed { index, word: Word ->  "\t${index + 1} - ${word.translation}"}
+        .joinToString(separator = "\n")
+    return this.correctAnswer.original + "\n" + variants + "\n\t" + "-".repeat(10) + "\n\t0 - Меню"
 }
 
 fun List<Word>.filterLearnedWords(): Int {
     return this.filter { it.correctAnswersCount >= MAX_COUNT_RIGHT_ANSWERS }.size
 }
 
-fun saveDictionary(dictionary: MutableList<Word>) {
-    val wordsFile: File = File("words.txt")
-    wordsFile.printWriter().use { out ->
-        dictionary.forEach { word ->
-            out.println("${word.original}|${word.translation}|${word.correctAnswersCount}")
-        }
-    }
-
-}
-
 fun main() {
 
-    val dictionary = loadDictionary()
+    val trainer = LearnWordsTrainer()
 
     while (true) {
+
         println("Меню:\n1 - Учить слова\n2 - Статистика\n0 - Выход")
-
-        val input = readln().toString()
-
+        val input = readln().toIntOrNull()
         when (input) {
-            "1" -> {
-                val notLearnedList = dictionary.filter { it.correctAnswersCount < MAX_COUNT_RIGHT_ANSWERS }
+            1 -> {
+                val question = trainer.getNextQuestion()
 
-                if (notLearnedList.isEmpty()) {
+                if (question == null) {
                     println("Все слова в словаре выучены")
                     continue
+                } else {
+                    println(question.asConsoleString())
                 }
-
-                val questionWords = notLearnedList.shuffled().take(NOT_LEARNED_WORDS_COUNT)
-                val correctAnswer = questionWords.random()
-                val answerChoices = questionWords.shuffled()
-
-                println("${correctAnswer.original}:")
-
-                answerChoices.forEachIndexed { index, word ->
-                    println("\t${index + 1} - ${word.translation}")
-                }
-
-                val splitter = "-".repeat(10)
-                println("\t" + splitter)
-                println("\t0 - Меню")
 
                 println("Введите номер правильного ответа:")
-                val userAnswerInput = readln().toInt()
+                val userAnswerInput = readln().toIntOrNull()
 
                 if (userAnswerInput == 0) {
                     continue
                 }
 
-                val correctAnswerId = answerChoices.indexOf(correctAnswer) + 1
-
-                if (userAnswerInput == correctAnswerId) {
-                    correctAnswer.correctAnswersCount++
+                if (trainer.checkAnswer(userAnswerInput?.minus(1))) {
                     println("Правильно!")
-                    saveDictionary(dictionary)
                 } else {
-                    println("Неправильно! ${correctAnswer.original} - это ${correctAnswer.translation}")
+                    println("Неправильно! ${question.correctAnswer.original} - это ${question.correctAnswer.translation}")
                 }
-
             }
-            "2" -> {
-                val totalCount = dictionary.size
-                val learnedCount = dictionary.filterLearnedWords()
-                val percent = (learnedCount / totalCount) * MAXIMUM_PERCENT
-                println("Выучено $learnedCount слов из $totalCount | $percent%")
+
+            2 -> {
+                val statistics = trainer.getStatistics()
+                println("Выучено ${statistics.learnedCount} слов из ${statistics.totalCount} | ${statistics.percent}%")
                 println()
             }
-            "0" -> break
+
+            0 -> break
             else -> println("Введите число 1, 2 или 0")
         }
     }
