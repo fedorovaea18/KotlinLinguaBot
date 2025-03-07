@@ -1,5 +1,7 @@
 package ru.fedorova.spring
 
+const val SEPARATOR_LENGTH = 10
+
 data class Word(
     val original: String,
     val translation: String,
@@ -10,16 +12,21 @@ fun Question.asConsoleString(): String {
     val variants = this.variants
         .mapIndexed { index, word: Word ->  "\t${index + 1} - ${word.translation}"}
         .joinToString(separator = "\n")
-    return this.correctAnswer.original + "\n" + variants + "\n\t" + "-".repeat(10) + "\n\t0 - Меню"
+    return this.correctAnswer.original + "\n" + variants + "\n\t" + "-".repeat(SEPARATOR_LENGTH) + "\n\t0 - Меню"
 }
 
-fun List<Word>.filterLearnedWords(): Int {
-    return this.filter { it.correctAnswersCount >= MAX_COUNT_RIGHT_ANSWERS }.size
+fun List<Word>.filterLearnedWords(learnedAnswerCount: Int = 3): Int {
+    return this.filter { it.correctAnswersCount >= learnedAnswerCount }.size
 }
 
 fun main() {
 
-    val trainer = LearnWordsTrainer()
+    val trainer = try {
+        LearnWordsTrainer(3, 4)
+    } catch (e: Exception) {
+        println("Невозможно загрузить словарь")
+        return
+    }
 
     while (true) {
 
@@ -27,32 +34,36 @@ fun main() {
         val input = readln().toIntOrNull()
         when (input) {
             1 -> {
-                val question = trainer.getNextQuestion()
+                while (true) {
+                    val question = trainer.getNextQuestion()
 
-                if (question == null) {
-                    println("Все слова в словаре выучены")
-                    continue
-                } else {
-                    println(question.asConsoleString())
-                }
+                    if (question == null) {
+                        println("Все слова в словаре выучены")
+                        break
+                    } else {
+                        println(question.asConsoleString())
 
-                println("Введите номер правильного ответа:")
-                val userAnswerInput = readln().toIntOrNull()
+                        println("Введите номер правильного ответа:")
+                        val userAnswerInput = readln().toIntOrNull()
 
-                if (userAnswerInput == 0) {
-                    continue
-                }
+                        if (userAnswerInput == 0) {
+                            break
+                        }
 
-                if (trainer.checkAnswer(userAnswerInput?.minus(1))) {
-                    println("Правильно!")
-                } else {
-                    println("Неправильно! ${question.correctAnswer.original} - это ${question.correctAnswer.translation}")
+                        if (trainer.checkAnswer(userAnswerInput?.minus(1))) {
+                            println("Правильно!")
+                        } else {
+                            println("Неправильно! ${question.correctAnswer.original} - это ${question.correctAnswer.translation}")
+                        }
+
+                    }
+
                 }
             }
 
             2 -> {
                 val statistics = trainer.getStatistics()
-                println("Выучено ${statistics.learnedCount} слов из ${statistics.totalCount} | ${statistics.percent}%")
+                println("Выучено ${statistics.learnedCount} из ${statistics.totalCount} слов | ${statistics.percent}%")
                 println()
             }
 
