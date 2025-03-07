@@ -3,8 +3,6 @@ package ru.fedorova.spring
 import java.io.File
 
 const val MAXIMUM_PERCENT = 100
-const val MAX_COUNT_RIGHT_ANSWERS = 3
-const val NOT_LEARNED_WORDS_COUNT = 4
 
 class Statistics(
     val totalCount: Int,
@@ -17,7 +15,7 @@ data class Question(
     val correctAnswer: Word,
 )
 
-class LearnWordsTrainer {
+class LearnWordsTrainer(private val learnedAnswerCount: Int = 3, private val countOfQuestionWords: Int = 4) {
 
     private var question: Question? = null
     private val dictionary = loadDictionary()
@@ -25,14 +23,20 @@ class LearnWordsTrainer {
     fun getStatistics(): Statistics {
         val totalCount = dictionary.size
         val learnedCount = dictionary.filterLearnedWords()
-        val percent = (learnedCount / totalCount) * MAXIMUM_PERCENT
+        val percent = (learnedCount  * MAXIMUM_PERCENT) / totalCount
         return Statistics(totalCount, learnedCount, percent)
     }
 
     fun getNextQuestion(): Question? {
-        val notLearnedList = dictionary.filter { it.correctAnswersCount < MAX_COUNT_RIGHT_ANSWERS }
+        val notLearnedList = dictionary.filter { it.correctAnswersCount < learnedAnswerCount }
         if (notLearnedList.isEmpty()) return null
-        val questionWords = notLearnedList.shuffled().take(NOT_LEARNED_WORDS_COUNT)
+        val questionWords = if (notLearnedList.size < countOfQuestionWords) {
+            val learnedList = dictionary.filter { it.correctAnswersCount >= learnedAnswerCount }.shuffled()
+            notLearnedList.shuffled().take(countOfQuestionWords) +
+                    learnedList.take(countOfQuestionWords - notLearnedList.size)
+        } else {
+            notLearnedList.shuffled().take(countOfQuestionWords)
+        }.shuffled()
         val correctAnswer = questionWords.random()
         question = Question(
             variants = questionWords,
