@@ -5,12 +5,14 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
+const val TELEGRAM_BOT_API_URL = "https://api.telegram.org/bot"
+
 class TelegramBot(private val botToken: String) {
 
     private val client: HttpClient = HttpClient.newBuilder().build()
 
-    fun getMe(botToken: String): String {
-        val urlGetMe = "https://api.telegram.org/bot$botToken/getMe"
+    fun getMe(): String {
+        val urlGetMe = "${TELEGRAM_BOT_API_URL}$botToken/getMe"
         val requestGetMe: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlGetMe)).build()
         val responseGetMe: HttpResponse<String> = client.send(requestGetMe, HttpResponse.BodyHandlers.ofString())
 
@@ -18,8 +20,8 @@ class TelegramBot(private val botToken: String) {
 
     }
 
-    fun getUpdates(botToken: String, updateId: Int): String {
-        val urlGetUpdates = "https://api.telegram.org/bot$botToken/getUpdates?offset=$updateId"
+    fun getUpdates(updateId: Int): String {
+        val urlGetUpdates = "${TELEGRAM_BOT_API_URL}$botToken/getUpdates?offset=$updateId"
         val requestGetUpdates: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlGetUpdates)).build()
         val responseGetUpdates: HttpResponse<String> =
             client.send(requestGetUpdates, HttpResponse.BodyHandlers.ofString())
@@ -36,7 +38,7 @@ fun main(args: Array<String>) {
 
     while (true) {
         Thread.sleep(2000)
-        val updates: String = TelegramBot(botToken).getUpdates(botToken, updateId)
+        val updates: String = TelegramBot(botToken).getUpdates(updateId)
         println(updates)
 
         val updateIdRegex: Regex = "\"update_id\":(\\d+)".toRegex()
