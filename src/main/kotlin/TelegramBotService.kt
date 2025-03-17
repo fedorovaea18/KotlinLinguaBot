@@ -9,8 +9,9 @@ const val TELEGRAM_BOT_API_URL = "https://api.telegram.org/bot"
 
 class TelegramBotService(private val botToken: String) {
 
+    private val client: HttpClient = HttpClient.newBuilder().build()
+
     private fun sendRequest(url: String): String {
-        val client: HttpClient = HttpClient.newBuilder().build()
         val request: HttpRequest = HttpRequest.newBuilder().uri(URI.create(url)).build()
         val response: HttpResponse<String> =
             client.send(request, HttpResponse.BodyHandlers.ofString())
@@ -22,7 +23,7 @@ class TelegramBotService(private val botToken: String) {
         return sendRequest(url)
     }
 
-    fun sendMessage(chatId: Int, text: String): String {
+    fun sendMessage(chatId: Long, text: String): String {
         val url = "${TELEGRAM_BOT_API_URL}$botToken/sendMessage?chat_id=$chatId&text=$text"
         return sendRequest(url)
     }
