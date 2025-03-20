@@ -2,12 +2,6 @@ package ru.fedorova.spring
 
 const val SEPARATOR_LENGTH = 10
 
-data class Word(
-    val original: String,
-    val translation: String,
-    var correctAnswersCount: Int = 0,
-)
-
 fun Question.asConsoleString(): String {
     val variants = this.variants
         .mapIndexed { index, word: Word ->  "\t${index + 1} - ${word.translation}"}
