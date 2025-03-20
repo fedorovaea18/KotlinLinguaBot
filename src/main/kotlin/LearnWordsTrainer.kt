@@ -4,6 +4,12 @@ import java.io.File
 
 const val MAXIMUM_PERCENT = 100
 
+data class Word(
+    val original: String,
+    val translation: String,
+    var correctAnswersCount: Int = 0,
+)
+
 class Statistics(
     val totalCount: Int,
     val learnedCount: Int,

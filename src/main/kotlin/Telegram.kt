@@ -9,6 +9,9 @@ fun main(args: Array<String>) {
     val updateIdRegex: Regex = "\"update_id\":(\\d+)".toRegex()
     val messageTextRegex: Regex = "\"text\":\"(.+?)\"".toRegex()
     val chatIdRegex: Regex = "\"chat\":\\{\"id\":(\\d+)".toRegex()
+//    val dataRegex: Regex = "\"data\":\"(.+?)\"".toRegex()
+
+    val trainer = LearnWordsTrainer()
 
     while (true) {
         Thread.sleep(2000)
@@ -19,14 +22,22 @@ fun main(args: Array<String>) {
         updateId = updateIdMatch?.groups?.get(1)?.value?.toIntOrNull()?.plus(1) ?: continue
 
         val messageTextMatch: MatchResult? = messageTextRegex.find(updates)
-        val text = messageTextMatch?.groups?.get(1)?.value
+        val messageText = messageTextMatch?.groups?.get(1)?.value
 
         val chatIdMatch: MatchResult? = chatIdRegex.find(updates)
         val chatId = chatIdMatch?.groups?.get(1)?.value?.toLongOrNull() ?: continue
 
-        if (text == "Hello") {
-            telegramBotService.sendMessage(chatId, text)
+//        val dataMatch: MatchResult? = dataRegex.find(updates)
+//        val data = dataMatch?.groups?.get(1)?.value?.toLongOrNull() ?: continue
+
+        if (messageText?.lowercase() == "hello") {
+            telegramBotService.sendMessage(chatId, messageText)
         }
+
+        if (messageText?.lowercase() == "/start") {
+            telegramBotService.sendMenu(chatId)
+        }
+
     }
 
 }
