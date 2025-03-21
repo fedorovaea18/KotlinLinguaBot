@@ -9,7 +9,7 @@ fun main(args: Array<String>) {
     val updateIdRegex: Regex = "\"update_id\":(\\d+)".toRegex()
     val messageTextRegex: Regex = "\"text\":\"(.+?)\"".toRegex()
     val chatIdRegex: Regex = "\"chat\":\\{\"id\":(\\d+)".toRegex()
-//    val dataRegex: Regex = "\"data\":\"(.+?)\"".toRegex()
+    val dataRegex: Regex = "\"data\":\"(.+?)\"".toRegex()
 
     val trainer = LearnWordsTrainer()
 
@@ -27,8 +27,8 @@ fun main(args: Array<String>) {
         val chatIdMatch: MatchResult? = chatIdRegex.find(updates)
         val chatId = chatIdMatch?.groups?.get(1)?.value?.toLongOrNull() ?: continue
 
-//        val dataMatch: MatchResult? = dataRegex.find(updates)
-//        val data = dataMatch?.groups?.get(1)?.value?.toLongOrNull() ?: continue
+        val dataMatch: MatchResult? = dataRegex.find(updates)
+        val data = dataMatch?.groups?.get(1)?.value
 
         if (messageText?.lowercase() == "hello") {
             telegramBotService.sendMessage(chatId, messageText)
@@ -36,6 +36,12 @@ fun main(args: Array<String>) {
 
         if (messageText?.lowercase() == "/start") {
             telegramBotService.sendMenu(chatId)
+        }
+
+        if (data == STATISTICS_CLICKED) {
+            val statistics = trainer.getStatistics()
+            val statisticsText = "Выучено ${statistics.learnedCount} из ${statistics.totalCount} слов | ${statistics.percent}%"
+            telegramBotService.sendMessage(chatId, statisticsText)
         }
 
     }
