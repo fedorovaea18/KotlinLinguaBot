@@ -1,11 +1,15 @@
 package ru.fedorova.spring
 
 import java.net.URI
+import java.net.URLEncoder
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.nio.charset.StandardCharsets
 
 const val TELEGRAM_BOT_API_URL = "https://api.telegram.org/bot"
+const val LEARN_WORDS_CLICKED = "learn_words_clicked"
+const val STATISTICS_CLICKED = "statistics_clicked"
 
 class TelegramBotService(private val botToken: String) {
 
@@ -24,7 +28,11 @@ class TelegramBotService(private val botToken: String) {
     }
 
     fun sendMessage(chatId: Long, text: String): String {
-        val url = "${TELEGRAM_BOT_API_URL}$botToken/sendMessage?chat_id=$chatId&text=$text"
+        val encoded = URLEncoder.encode(
+            text,
+            StandardCharsets.UTF_8
+        )
+        val url = "${TELEGRAM_BOT_API_URL}$botToken/sendMessage?chat_id=$chatId&text=$encoded"
         val request: HttpRequest = HttpRequest.newBuilder().uri(URI.create(url)).build()
         return sendRequest(request)
     }
@@ -40,11 +48,11 @@ class TelegramBotService(private val botToken: String) {
                             [
                                 {
                                     "text": "Изучить слова",
-                                    "callback_data": "learn_words_clicked"
+                                    "callback_data": "$LEARN_WORDS_CLICKED"
                                 },
                                 {
                                     "text": "Статистика",
-                                    "callback_data": "statistics_clicked"
+                                    "callback_data": "$STATISTICS_CLICKED"
                                 }
                             ]    
                         ]
