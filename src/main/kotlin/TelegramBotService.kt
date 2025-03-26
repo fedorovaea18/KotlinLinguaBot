@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets
 const val TELEGRAM_BOT_API_URL = "https://api.telegram.org/bot"
 const val LEARN_WORDS_CLICKED = "learn_words_clicked"
 const val STATISTICS_CLICKED = "statistics_clicked"
+const val CALLBACK_DATA_ANSWER_PREFIX = "answer_"
 
 class TelegramBotService(private val botToken: String) {
 
@@ -39,7 +40,7 @@ class TelegramBotService(private val botToken: String) {
 
     fun sendMenu(chatId: Long): String {
         val url = "${TELEGRAM_BOT_API_URL}$botToken/sendMessage"
-            val sendMenuBody = """
+        val sendMenuBody = """
                 {
                     "chat_id": $chatId,
                     "text": "Основное меню",
@@ -62,6 +63,36 @@ class TelegramBotService(private val botToken: String) {
         val request: HttpRequest = HttpRequest.newBuilder().uri(URI.create(url))
             .header("Content-Type", "application/json")
             .POST(HttpRequest.BodyPublishers.ofString(sendMenuBody))
+            .build()
+        return sendRequest(request)
+    }
+
+    fun sendQuestion(chatId: Long, question: Question): String {
+        val url = "${TELEGRAM_BOT_API_URL}$botToken/sendMessage"
+        val answersBody = question.variants.mapIndexed { index, word ->
+            """
+                {
+                    "text": "${word.translation}",
+                    "callback_data": "$CALLBACK_DATA_ANSWER_PREFIX$index"
+                }    
+            """.trimIndent()
+        }.joinToString(",")
+        val questionBody = """
+            {
+                "chat_id": $chatId,
+                "text": "${question.correctAnswer.original}",
+                "reply_markup": {
+                    "inline_keyboard": [
+                        [
+                            $answersBody
+                        ]
+                    ]
+                }        
+            }        
+        """.trimIndent()
+        val request: HttpRequest = HttpRequest.newBuilder().uri(URI.create(url))
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(questionBody))
             .build()
         return sendRequest(request)
     }
