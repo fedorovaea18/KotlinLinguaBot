@@ -44,6 +44,24 @@ fun main(args: Array<String>) {
             telegramBotService.sendMessage(chatId, statisticsText)
         }
 
+        fun checkNextQuestionAndSend(
+            trainer: LearnWordsTrainer,
+            telegramBotService: TelegramBotService,
+            chatId: Long,
+        ) {
+            val question = trainer.getNextQuestion()
+            if (question == null) {
+                telegramBotService.sendMessage(chatId, "Все слова в словаре выучены")
+            } else {
+                telegramBotService.sendQuestion(chatId, question)
+            }
+
+        }
+
+        if (data == LEARN_WORDS_CLICKED) {
+            checkNextQuestionAndSend(trainer, telegramBotService, chatId)
+        }
+
     }
 
 }
