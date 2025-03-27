@@ -40,7 +40,8 @@ fun main(args: Array<String>) {
 
         if (data == STATISTICS_CLICKED) {
             val statistics = trainer.getStatistics()
-            val statisticsText = "Выучено ${statistics.learnedCount} из ${statistics.totalCount} слов | ${statistics.percent}%"
+            val statisticsText =
+                "Выучено ${statistics.learnedCount} из ${statistics.totalCount} слов | ${statistics.percent}%"
             telegramBotService.sendMessage(chatId, statisticsText)
         }
 
@@ -59,6 +60,24 @@ fun main(args: Array<String>) {
         }
 
         if (data == LEARN_WORDS_CLICKED) {
+            checkNextQuestionAndSend(trainer, telegramBotService, chatId)
+        }
+
+        if (data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) == true) {
+            val userAnswerIndex = data.substring(CALLBACK_DATA_ANSWER_PREFIX.length).toInt()
+            val isCorrect = trainer.checkAnswer(userAnswerIndex)
+            if (isCorrect) {
+                telegramBotService.sendMessage(chatId, "Правильно!")
+            } else {
+                val rightAnswer = trainer.question?.correctAnswer
+                if (rightAnswer !== null) {
+                    val wrongAnswerText =
+                        "Неправильно! ${rightAnswer.original} - это ${rightAnswer.translation}"
+                    telegramBotService.sendMessage(chatId, wrongAnswerText)
+
+                }
+            }
+
             checkNextQuestionAndSend(trainer, telegramBotService, chatId)
         }
 
