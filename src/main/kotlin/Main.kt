@@ -4,7 +4,7 @@ const val SEPARATOR_LENGTH = 10
 
 fun Question.asConsoleString(): String {
     val variants = this.variants
-        .mapIndexed { index, word: Word ->  "\t${index + 1} - ${word.translation}"}
+        .mapIndexed { index, word: Word -> "\t${index + 1} - ${word.translation}" }
         .joinToString(separator = "\n")
     return this.correctAnswer.original + "\n" + variants + "\n\t" + "-".repeat(SEPARATOR_LENGTH) + "\n\t0 - Меню"
 }
@@ -16,7 +16,7 @@ fun List<Word>.filterLearnedWords(learnedAnswerCount: Int = 3): Int {
 fun main() {
 
     val trainer = try {
-        LearnWordsTrainer(3, 4)
+        LearnWordsTrainer(learnedAnswerCount = 3, countOfQuestionWords = 4)
     } catch (e: Exception) {
         println("Невозможно загрузить словарь")
         return
