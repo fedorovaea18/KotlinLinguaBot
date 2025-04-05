@@ -27,7 +27,7 @@ data class Update(
 @Serializable
 data class Response(
     @SerialName("result")
-    val result: List<Update>,
+    val result: List<Update>?,
 )
 
 @Serializable
@@ -85,6 +85,7 @@ class TelegramBotService(private val botToken: String) {
             client.send(request, HttpResponse.BodyHandlers.ofString())
         return response.body()
     }
+
 
     fun getUpdates(updateId: Long): String {
         val url = "${TELEGRAM_BOT_API_URL}$botToken/getUpdates?offset=$updateId"

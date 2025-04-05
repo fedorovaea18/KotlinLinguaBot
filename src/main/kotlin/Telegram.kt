@@ -16,11 +16,11 @@ fun main(args: Array<String>) {
 
     while (true) {
         Thread.sleep(2000)
-        val responseString: String = telegramBotService.getUpdates(lastUpdateId)
-        println(responseString)
+        val result = runCatching { telegramBotService.getUpdates(lastUpdateId) }
+        val responseString = result.getOrNull() ?: continue
 
         val response: Response = json.decodeFromString(responseString)
-        if (response.result.isEmpty()) continue
+        if (response.result.isNullOrEmpty()) continue
         val sortedUpdates = response.result.sortedBy { it.updateId }
         sortedUpdates.forEach { handleUpdate(it, json, telegramBotService, trainers) }
         lastUpdateId = sortedUpdates.last().updateId + 1
