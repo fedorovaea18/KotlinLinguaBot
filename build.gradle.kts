@@ -1,6 +1,9 @@
 plugins {
     kotlin("jvm") version "2.1.20"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
     kotlin("plugin.serialization") version "2.1.20"
+    application
+    java
 }
 
 group = "ru.fedorova"
@@ -18,6 +21,11 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
 kotlin {
     jvmToolchain(21)
+}
+
+application {
+    mainClass.set("ru.fedorova.spring.TelegramKt")
 }
