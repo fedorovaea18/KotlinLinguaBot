@@ -26,7 +26,7 @@ jobs:
         run: mv build/libs/KotlinLinguaBot-1.0-SNAPSHOT-all.jar bot.jar
 
       - name: Deploy jar to VPS
-        uses: fedorovaea18/scp-action@master
+        uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.SSH_USER }}
@@ -35,7 +35,7 @@ jobs:
           target: /root
 
       - name: Deploy words.txt to VPS
-        uses: fedorovaea18/scp-action@master
+        uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.SSH_USER }}
@@ -44,7 +44,7 @@ jobs:
           target: /root
 
       - name: Restart Remote Service
-        uses: feorovaea18/ssh-action@master
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
           username:  ${{ secrets.SSH_USER }}
