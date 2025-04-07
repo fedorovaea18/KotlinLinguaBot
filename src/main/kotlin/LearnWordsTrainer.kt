@@ -20,24 +20,24 @@ data class Question(
 )
 
 class LearnWordsTrainer(
-    private val userDictionary: IUserDictionary,
+    private val fileUserDictionary: IUserDictionary,
     private val countOfQuestionWords: Int = 4
 ) {
 
     internal var question: Question? = null
 
     fun getStatistics(): Statistics {
-        val totalCount = userDictionary.getSize()
-        val learnedCount = userDictionary.getNumOfLearnedWords()
+        val totalCount = fileUserDictionary.getSize()
+        val learnedCount = fileUserDictionary.getNumOfLearnedWords()
         val percent = (learnedCount * MAXIMUM_PERCENT) / totalCount
         return Statistics(totalCount, learnedCount, percent)
     }
 
     fun getNextQuestion(): Question? {
-        val notLearnedList = userDictionary.getUnlearnedWords()
+        val notLearnedList = fileUserDictionary.getUnlearnedWords()
         if (notLearnedList.isEmpty()) return null
         val questionWords = if (notLearnedList.size < countOfQuestionWords) {
-            val learnedList = userDictionary.getLearnedWords().shuffled()
+            val learnedList = fileUserDictionary.getLearnedWords().shuffled()
             notLearnedList.shuffled().take(countOfQuestionWords) +
                     learnedList.take(countOfQuestionWords - notLearnedList.size)
         } else {
@@ -55,7 +55,7 @@ class LearnWordsTrainer(
         return question?.let {
             val correctAnswerId = it.variants.indexOf(it.correctAnswer)
             if (correctAnswerId == userAnswerIndex) {
-                userDictionary.setCorrectAnswersCount(it.correctAnswer.original, it.correctAnswer.correctAnswersCount++)
+                fileUserDictionary.setCorrectAnswersCount(it.correctAnswer.original, it.correctAnswer.correctAnswersCount++)
                 true
             } else {
                 false
@@ -64,7 +64,7 @@ class LearnWordsTrainer(
     }
 
     fun resetProgress() {
-        userDictionary.resetUserProgress()
+        fileUserDictionary.resetUserProgress()
     }
 
 }

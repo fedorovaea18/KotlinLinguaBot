@@ -1,7 +1,5 @@
 package ru.fedorova.spring
 
-import java.sql.DriverManager
-
 const val SEPARATOR_LENGTH = 10
 
 fun Question.asConsoleString(): String {
@@ -18,7 +16,7 @@ fun List<Word>.filterLearnedWords(learnedAnswerCount: Int = 3): Int {
 fun main() {
 
     val trainer = try {
-        LearnWordsTrainer(DatabaseUserDictionary(DriverManager.getConnection("jdbc:sqlite:data.db")))
+        LearnWordsTrainer(learnedAnswerCount = 3, countOfQuestionWords = 4)
     } catch (e: Exception) {
         println("Невозможно загрузить словарь")
         return
