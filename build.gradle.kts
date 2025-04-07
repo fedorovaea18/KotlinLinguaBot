@@ -16,6 +16,7 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+    implementation("org.xerial:sqlite-jdbc:3.49.1.0")
 }
 
 tasks.test {
@@ -27,5 +28,5 @@ kotlin {
 }
 
 application {
-    mainClass.set("ru.fedorova.spring.TelegramKt")
+    mainClass.set("TelegramKt")
 }
