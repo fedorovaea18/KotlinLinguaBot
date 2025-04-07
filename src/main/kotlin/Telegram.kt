@@ -1,44 +1,55 @@
 package ru.fedorova.spring
 
 import kotlinx.serialization.json.Json
+import java.io.File
+
+import java.sql.DriverManager
 
 fun main(args: Array<String>) {
 
-    val botToken = args[0]
-    var lastUpdateId = 0L
-    val telegramBotService = TelegramBotService(botToken)
+    val connection = DriverManager.getConnection("jdbc:sqlite:data.db")
+        connection.use {
+            updateDictionary(File("words.txt"), connection)
+        val dictionary = DatabaseUserDictionary(connection)
+        val trainer = LearnWordsTrainer(dictionary)
 
-    val json = Json {
-        ignoreUnknownKeys = true
-    }
+            val botToken = args[0]
+            var lastUpdateId = 0L
+            val telegramBotService = TelegramBotService(botToken)
 
-    val trainers = HashMap<Long, LearnWordsTrainer>()
+            val json = Json {
+                ignoreUnknownKeys = true
+            }
 
-    while (true) {
-        Thread.sleep(2000)
-        val result = runCatching { telegramBotService.getUpdates(lastUpdateId) }
-        val responseString = result.getOrNull() ?: continue
+            val trainers = HashMap<Long, LearnWordsTrainer>()
 
-        val response: Response = json.decodeFromString(responseString)
-        if (response.result.isNullOrEmpty()) continue
-        val sortedUpdates = response.result.sortedBy { it.updateId }
-        sortedUpdates.forEach { handleUpdate(it, json, telegramBotService, trainers) }
-        lastUpdateId = sortedUpdates.last().updateId + 1
-    }
+            while (true) {
+                Thread.sleep(2000)
+                val result = runCatching { telegramBotService.getUpdates(lastUpdateId) }
+                val responseString = result.getOrNull() ?: continue
+
+                val response: Response = json.decodeFromString(responseString)
+                if (response.result.isNullOrEmpty()) continue
+                val sortedUpdates = response.result.sortedBy { it.updateId }
+                sortedUpdates.forEach { handleUpdate(it, json, telegramBotService, trainers, dictionary) }
+                lastUpdateId = sortedUpdates.last().updateId + 1
+            }
+        }
 }
 
 fun handleUpdate(
     update: Update,
     json: Json,
     telegramBotService: TelegramBotService,
-    trainers: HashMap<Long, LearnWordsTrainer>
+    trainers: HashMap<Long, LearnWordsTrainer>,
+    dictionary: IUserDictionary,
 ) {
 
     val message = update.message?.text
     val chatId = update.message?.chat?.id ?: update.callbackquery?.message?.chat?.id ?: return
     val data = update.callbackquery?.data
 
-    val trainer = trainers.getOrPut(chatId) { LearnWordsTrainer("$chatId.txt") }
+    val trainer = trainers.getOrPut(chatId) { LearnWordsTrainer(dictionary) }
 
     if (message?.lowercase() == "hello") {
         telegramBotService.sendMessage(json, chatId, message)

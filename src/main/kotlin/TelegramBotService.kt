@@ -88,13 +88,13 @@ class TelegramBotService(private val botToken: String) {
 
 
     fun getUpdates(updateId: Long): String {
-        val url = "${TELEGRAM_BOT_API_URL}$botToken/getUpdates?offset=$updateId"
+        val url = "$TELEGRAM_BOT_API_URL$botToken/getUpdates?offset=$updateId"
         val request: HttpRequest = HttpRequest.newBuilder().uri(URI.create(url)).build()
         return sendRequest(request)
     }
 
     fun sendMessage(json: Json, chatId: Long?, message: String): String {
-        val url = "${TELEGRAM_BOT_API_URL}$botToken/sendMessage"
+        val url = "$TELEGRAM_BOT_API_URL$botToken/sendMessage"
         val requestBody = SendMessageRequest(
             chatId = chatId,
             text = message,
@@ -109,7 +109,7 @@ class TelegramBotService(private val botToken: String) {
     }
 
     fun sendMenu(json: Json, chatId: Long?): String {
-        val url = "${TELEGRAM_BOT_API_URL}$botToken/sendMessage"
+        val url = "$TELEGRAM_BOT_API_URL$botToken/sendMessage"
         val requestBody = SendMessageRequest(
             chatId = chatId,
             text = "Основное меню",
@@ -144,7 +144,7 @@ class TelegramBotService(private val botToken: String) {
     }
 
     fun sendQuestion(json: Json, chatId: Long?, question: Question): String {
-        val url = "${TELEGRAM_BOT_API_URL}$botToken/sendMessage"
+        val url = "$TELEGRAM_BOT_API_URL$botToken/sendMessage"
         val requestBody = SendMessageRequest(
             chatId = chatId,
             text = question.correctAnswer.original,
