@@ -8,33 +8,33 @@ import java.sql.DriverManager
 fun main(args: Array<String>) {
 
     val connection = DriverManager.getConnection("jdbc:sqlite:data.db")
-        connection.use {
-            updateDictionary(File("words.txt"), connection)
+    connection.use {
+        updateDictionary(File("words.txt"), connection)
         val dictionary = DatabaseUserDictionary(connection)
         val trainer = LearnWordsTrainer(dictionary)
 
-            val botToken = args[0]
-            var lastUpdateId = 0L
-            val telegramBotService = TelegramBotService(botToken)
+        val botToken = args[0]
+        var lastUpdateId = 0L
+        val telegramBotService = TelegramBotService(botToken)
 
-            val json = Json {
-                ignoreUnknownKeys = true
-            }
-
-            val trainers = HashMap<Long, LearnWordsTrainer>()
-
-            while (true) {
-                Thread.sleep(2000)
-                val result = runCatching { telegramBotService.getUpdates(lastUpdateId) }
-                val responseString = result.getOrNull() ?: continue
-
-                val response: Response = json.decodeFromString(responseString)
-                if (response.result.isNullOrEmpty()) continue
-                val sortedUpdates = response.result.sortedBy { it.updateId }
-                sortedUpdates.forEach { handleUpdate(it, json, telegramBotService, trainers, dictionary) }
-                lastUpdateId = sortedUpdates.last().updateId + 1
-            }
+        val json = Json {
+            ignoreUnknownKeys = true
         }
+
+        val trainers = HashMap<Long, LearnWordsTrainer>()
+
+        while (true) {
+            Thread.sleep(2000)
+            val result = runCatching { telegramBotService.getUpdates(lastUpdateId) }
+            val responseString = result.getOrNull() ?: continue
+
+            val response: Response = json.decodeFromString(responseString)
+            if (response.result.isNullOrEmpty()) continue
+            val sortedUpdates = response.result.sortedBy { it.updateId }
+            sortedUpdates.forEach { handleUpdate(it, json, telegramBotService, trainers, dictionary) }
+            lastUpdateId = sortedUpdates.last().updateId + 1
+        }
+    }
 }
 
 fun handleUpdate(
@@ -48,6 +48,10 @@ fun handleUpdate(
     val message = update.message?.text
     val chatId = update.message?.chat?.id ?: update.callbackquery?.message?.chat?.id ?: return
     val data = update.callbackquery?.data
+
+    if (dictionary is DatabaseUserDictionary) {
+        dictionary.setCurrentChatId(chatId)
+    }
 
     val trainer = trainers.getOrPut(chatId) { LearnWordsTrainer(dictionary) }
 
