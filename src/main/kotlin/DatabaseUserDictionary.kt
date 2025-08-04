@@ -159,7 +159,6 @@ class DatabaseUserDictionary(
             statement.executeUpdate()
         }
 
-        // Update the words table's correctAnswerCount
         val updateWordSql = """
             UPDATE words SET correctAnswerCount = ? WHERE text = ?
         """.trimIndent()
@@ -170,11 +169,37 @@ class DatabaseUserDictionary(
         }
     }
 
+    override fun getCorrectAnswersCount(word: String): Int {
+        val chatId = currentChatId ?: throw IllegalStateException("Chat ID не получен")
+        val query = """
+            SELECT correct_answer_count 
+            FROM user_answers 
+            WHERE user_id = (SELECT id FROM users WHERE chat_id = ?)
+            AND word_id = (SELECT id FROM words WHERE text = ?)
+        """.trimIndent()
+        connection.prepareStatement(query).use { statement ->
+            statement.setLong(1, chatId)
+            statement.setString(2, word)
+            statement.executeQuery().use { resultSet ->
+                return if (resultSet.next()) {
+                    resultSet.getInt("correct_answer_count")
+                } else {
+                    0
+                }
+            }
+        }
+    }
+
     override fun resetUserProgress() {
         connection.createStatement().use { statement ->
             statement.executeUpdate(
                 """
                 DELETE FROM user_answers
+                """.trimIndent()
+            )
+            statement.executeUpdate(
+                """
+                UPDATE words SET correctAnswerCount = 0
                 """.trimIndent()
             )
         }

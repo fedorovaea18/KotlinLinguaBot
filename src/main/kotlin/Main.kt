@@ -28,9 +28,8 @@ fun main() {
             println("Невозможно загрузить словарь")
             return
         }
-        dictionary.setCurrentChatId(1L) // Set a fixed chat ID for console use
+        dictionary.setCurrentChatId(1L)
 
-        // Ensure user with chat_id = 1 exists in the users table
         val username = "console_user"
         val chatId = 1L
         val insertUserSql = """
