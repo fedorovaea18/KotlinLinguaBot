@@ -28,5 +28,5 @@ kotlin {
 }
 
 application {
-    mainClass.set("TelegramKt")
+    mainClass.set("ru.fedorova.spring.TelegramKt")
 }

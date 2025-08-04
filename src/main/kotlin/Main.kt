@@ -1,6 +1,7 @@
 package ru.fedorova.spring
 
 import java.sql.DriverManager
+import java.io.File
 
 const val SEPARATOR_LENGTH = 10
 
@@ -17,56 +18,76 @@ fun List<Word>.filterLearnedWords(learnedAnswerCount: Int = 3): Int {
 
 fun main() {
 
-    val trainer = try {
-        LearnWordsTrainer(DatabaseUserDictionary(DriverManager.getConnection("jdbc:sqlite:data.db")))
-    } catch (e: Exception) {
-        println("Невозможно загрузить словарь")
-        return
-    }
+    val connection = DriverManager.getConnection("jdbc:sqlite:data.db")
+    connection.use {
+        updateDictionary(File("words.txt"), connection)
+        
+        val dictionary = try {
+            DatabaseUserDictionary(connection)
+        } catch (e: Exception) {
+            println("Невозможно загрузить словарь")
+            return
+        }
+        dictionary.setCurrentChatId(1L) // Set a fixed chat ID for console use
 
-    while (true) {
+        // Ensure user with chat_id = 1 exists in the users table
+        val username = "console_user"
+        val chatId = 1L
+        val insertUserSql = """
+            INSERT OR IGNORE INTO users (username, chat_id) VALUES (?, ?)
+        """.trimIndent()
+        connection.prepareStatement(insertUserSql).use { stmt ->
+            stmt.setString(1, username)
+            stmt.setLong(2, chatId)
+            stmt.executeUpdate()
+        }
 
-        println("Меню:\n1 - Учить слова\n2 - Статистика\n0 - Выход")
-        val input = readln().toIntOrNull()
-        when (input) {
-            1 -> {
-                while (true) {
-                    val question = trainer.getNextQuestion()
+        val trainer = LearnWordsTrainer(dictionary)
 
-                    if (question == null) {
-                        println("Все слова в словаре выучены")
-                        break
-                    } else {
-                        println(question.asConsoleString())
+        while (true) {
 
-                        println("Введите номер правильного ответа:")
-                        val userAnswerInput = readln().toIntOrNull()
+            println("Меню:\n1 - Учить слова\n2 - Статистика\n0 - Выход")
+            val input = readln().toIntOrNull()
+            when (input) {
+                1 -> {
+                    while (true) {
+                        val question = trainer.getNextQuestion()
 
-                        if (userAnswerInput == 0) {
+                        if (question == null) {
+                            println("Все слова в словаре выучены")
                             break
-                        }
-
-                        if (trainer.checkAnswer(userAnswerInput?.minus(1))) {
-                            println("Правильно!")
                         } else {
-                            println("Неправильно! ${question.correctAnswer.original} - это ${question.correctAnswer.translation}")
+                            println(question.asConsoleString())
+
+                            println("Введите номер правильного ответа:")
+                            val userAnswerInput = readln().toIntOrNull()
+
+                            if (userAnswerInput == 0) {
+                                break
+                            }
+
+                            if (trainer.checkAnswer(userAnswerInput?.minus(1))) {
+                                println("Правильно!")
+                            } else {
+                                println("Неправильно! ${question.correctAnswer.original} - это ${question.correctAnswer.translation}")
+                            }
+
                         }
 
                     }
-
                 }
-            }
 
-            2 -> {
-                val statistics = trainer.getStatistics()
-                println("Выучено ${statistics.learnedCount} из ${statistics.totalCount} слов | ${statistics.percent}%")
-                println()
-            }
+                2 -> {
+                    val statistics = trainer.getStatistics()
+                    println("Выучено ${statistics.learnedCount} из ${statistics.totalCount} слов | ${statistics.percent}%")
+                    println()
+                }
 
-            0 -> break
-            else -> println("Введите число 1, 2 или 0")
+                0 -> break
+                else -> println("Введите число 1, 2 или 0")
+            }
         }
+
     }
 
 }
-
