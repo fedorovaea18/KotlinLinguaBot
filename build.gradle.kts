@@ -17,6 +17,8 @@ dependencies {
     testImplementation(kotlin("test"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
     implementation("org.xerial:sqlite-jdbc:3.49.1.0")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:2.1.20")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.1.20")
 }
 
 tasks.test {

@@ -55,10 +55,14 @@ class LearnWordsTrainer(
         return question?.let {
             val correctAnswerId = it.variants.indexOf(it.correctAnswer)
             if (correctAnswerId == userAnswerIndex) {
+
+                val currentCount = fileUserDictionary.getCorrectAnswersCount(it.correctAnswer.original)
                 fileUserDictionary.setCorrectAnswersCount(
                     it.correctAnswer.original,
-                    it.correctAnswer.correctAnswersCount + 1
+                    currentCount + 1
                 )
+
+                it.correctAnswer.correctAnswersCount = currentCount + 1
                 true
             } else {
                 false

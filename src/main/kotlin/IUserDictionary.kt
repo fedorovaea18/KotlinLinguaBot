@@ -6,5 +6,6 @@ interface IUserDictionary {
     fun getLearnedWords(): List<Word>
     fun getUnlearnedWords(): List<Word>
     fun setCorrectAnswersCount(word: String, correctAnswersCount: Int)
+    fun getCorrectAnswersCount(word: String): Int
     fun resetUserProgress()
 }
