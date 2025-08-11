@@ -48,6 +48,7 @@ fun handleUpdate(
     val message = update.message?.text
     val chatId = update.message?.chat?.id ?: update.callbackquery?.message?.chat?.id ?: return
     val data = update.callbackquery?.data
+    val document = update.message?.document
 
     if (dictionary is DatabaseUserDictionary) {
         dictionary.setCurrentChatId(chatId)
@@ -61,6 +62,20 @@ fun handleUpdate(
 
     if (message?.lowercase() == "/start") {
         telegramBotService.sendMenu(json, chatId)
+    }
+
+    if (document != null && dictionary is DatabaseUserDictionary) {
+        val getFileJson = telegramBotService.getFile(document.fileId, json)
+        val getFileResponse: GetFileResponse = json.decodeFromString(getFileJson)
+        val tgFile = getFileResponse.result
+        if (tgFile == null) {
+            telegramBotService.sendMessage(json, chatId, "Не удалось получить файл")
+        } else {
+            val localFileName = document.fileName
+            telegramBotService.downloadFile(tgFile.filePath, localFileName)
+            dictionary.importWordsFromFile(File(localFileName))
+            telegramBotService.sendMessage(json, chatId, "Словарь обновлён из файла: ${document.fileName}")
+        }
     }
 
     if (data == STATISTICS_CLICKED) {
