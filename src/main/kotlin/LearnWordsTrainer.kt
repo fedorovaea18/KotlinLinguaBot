@@ -20,7 +20,7 @@ data class Question(
 )
 
 class LearnWordsTrainer(
-    private val fileUserDictionary: IUserDictionary,
+    val fileUserDictionary: IUserDictionary,
     private val countOfQuestionWords: Int = 4
 ) {
 
@@ -55,13 +55,11 @@ class LearnWordsTrainer(
         return question?.let {
             val correctAnswerId = it.variants.indexOf(it.correctAnswer)
             if (correctAnswerId == userAnswerIndex) {
-
                 val currentCount = fileUserDictionary.getCorrectAnswersCount(it.correctAnswer.original)
                 fileUserDictionary.setCorrectAnswersCount(
                     it.correctAnswer.original,
                     currentCount + 1
                 )
-
                 it.correctAnswer.correctAnswersCount = currentCount + 1
                 true
             } else {

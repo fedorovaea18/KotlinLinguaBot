@@ -13,6 +13,10 @@ class DatabaseUserDictionary(
         this.currentChatId = chatId
     }
 
+    fun importWordsFromFile(wordsFile: File) {
+        updateDictionary(wordsFile, connection)
+    }
+
     init {
         initializeDatabase(connection)
     }

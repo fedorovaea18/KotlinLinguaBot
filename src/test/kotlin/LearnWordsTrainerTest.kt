@@ -144,11 +144,11 @@ class LearnWordsTrainerTest {
     private class TestUserDictionary : IUserDictionary {
         private val words = mutableMapOf<String, Int>()
         private val allWords = listOf(
-            Word("cat", "кошка"),
-            Word("dog", "собака"),
-            Word("bird", "птица"),
-            Word("fish", "рыба"),
-            Word("tree", "дерево")
+            Word("cat", "кошка", originalWord = text),
+            Word("dog", "собака", originalWord = text),
+            Word("bird", "птица", originalWord = text),
+            Word("fish", "рыба", originalWord = text),
+            Word("tree", "дерево", originalWord = text)
         )
 
         override fun getNumOfLearnedWords(): Int {
