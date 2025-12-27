@@ -8,10 +8,8 @@ Telegram is a bot for learning vocabulary through interactive multiple choice qu
 git clone git@github.com:fedorovaea18/KotlinLinguaBot.git
 cd KotlinLinguaBot
 ```
-2. Build the project and create shadow JAR
-This will create `build/libs/KotlinLinguaBot-1.0-SNAPSHOT-all.jar`
-3. Prepare dictionary file (optional)
-The bot can work without `words.txt` - you can upload words via Telegram later. However, if you want to start with a dictionary, create a `words.txt` file in the project root with the following format: `original word|translation`
+2. Build the project and create shadow JAR. This will create `build/libs/KotlinLinguaBot-1.0-SNAPSHOT-all.jar`
+3. Prepare dictionary file (optional). The bot can work without `words.txt` - you can upload words via Telegram later. However, if you want to start with a dictionary, create a `words.txt` file in the project root with the following format: `original word|translation`
 
 ## Usage
 
